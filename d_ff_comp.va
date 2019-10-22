@@ -1,0 +1,32 @@
+
+`include "discipline.h"
+`include "constants.h"
+
+module diff_comp(vinp, vinn, vref, voutp, voutn);
+input vinp, vinn, vref;
+output voutp, voutn;
+electrical vinp, vinn, vref, voutp, voutn;
+parameter real vout_high = 5;
+parameter real vout_low = 0;
+parameter real comp_offset = 0;
+parameter real comp_slope = 1000;
+
+analog begin
+
+	@(initial_step) 
+	begin
+		if(vout_high <= vout_low) 
+		begin
+			$display("Range specification error. vout_high = (%E) less than vout_low = (%E). \n", vout_high, vout_low);
+			$finish;
+		end
+	end
+
+	V(voutp) <+ 0.5 * (vout_high - vout_low) 
+		* tanh(comp_slope*(V(vinp,vinn)-V(vref)-comp_offset))
+		+ (vout_high + vout_low)/2;
+	V(voutn) <+ 5 - 0.5 * (vout_high - vout_low) 
+		* tanh(comp_slope*(V(vinp,vinn)-V(vref)-comp_offset))
+		- (vout_high + vout_low)/2;
+end
+endmodule
